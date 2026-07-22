@@ -1,0 +1,50 @@
+name: Daily Portfolio Data Refresh
+
+on:
+  schedule:
+    - cron: '0 12 * * 1-5'    # noon UTC = ~7 AM ET on weekdays
+  workflow_dispatch:            # manual trigger for testing
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'requirements.txt'
+      - '.github/workflows/daily_refresh.yml'
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run test suite
+        run: python -m pytest tests/ -v
+
+  refresh:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run ETL pipeline (data quality gate fails the job on bad data)
+        working-directory: src
+        run: python etl_pipeline.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: Upload database artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: portfolio-dashboard-db
+          path: src/portfolio_dashboard.db
+          retention-days: 14
