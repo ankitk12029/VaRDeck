@@ -1,4 +1,4 @@
-# RiskLens Data Dictionary
+# VaRDeck Data Dictionary
 
 Every table in `portfolio_dashboard.db`, grouped by source module. 22 tables total:
 6 from the core ETL pipeline (`etl_pipeline.py`) and 16 from the risk analysis

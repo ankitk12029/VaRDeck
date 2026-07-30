@@ -1,4 +1,4 @@
-# RiskLens
+# VaRDeck
 
 A live Investment Portfolio Risk Dashboard. A Python ETL pipeline pulls real
 market data from Yahoo Finance, computes a full suite of portfolio risk
@@ -35,7 +35,7 @@ flowchart TD
 ## Project Structure
 
 ```
-RiskLens/
+VaRDeck/
 ├── src/
 │   ├── config.py             # Single source of truth: TICKERS, BENCHMARK, RISK_FREE_RATE, DB_URL, ...
 │   ├── etl_pipeline.py       # Core data pipeline (prices, returns, risk metrics)
@@ -58,7 +58,7 @@ RiskLens/
 
 ```bash
 git clone <this-repo>
-cd RiskLens
+cd VaRDeck
 
 python3 -m venv portfolio_env
 source portfolio_env/bin/activate      # Windows: portfolio_env\Scripts\activate
