@@ -37,6 +37,7 @@ flowchart TD
 ```
 RiskLens/
 ├── src/
+│   ├── config.py             # Single source of truth: TICKERS, BENCHMARK, RISK_FREE_RATE, DB_URL, ...
 │   ├── etl_pipeline.py       # Core data pipeline (prices, returns, risk metrics)
 │   ├── risk_analysis.py      # 8-module risk engine (VaR, stress tests, Monte Carlo, ...)
 │   └── verify_db.py          # Prints every table + row count + sample, runs sanity checks
@@ -67,6 +68,8 @@ pip install -r requirements.txt
 
 ## Running the Pipeline
 
+To change the portfolio composition, edit only `src/config.py`.
+
 ```bash
 cd src
 python etl_pipeline.py
@@ -75,10 +78,6 @@ python etl_pipeline.py
 This fetches live market data, computes all metrics, and writes
 `src/portfolio_dashboard.db` (SQLite). It also runs the full risk analysis
 engine automatically as the last step.
-
-To change the portfolio, edit the `TICKERS` dict at the top of
-`src/etl_pipeline.py` **and** `src/risk_analysis.py` (kept in sync manually —
-see [Known Limitations](#known-limitations)).
 
 ### Verifying the output
 
@@ -140,10 +139,6 @@ _Add Power BI and Tableau dashboard screenshots here once built:_
   genuinely "live" dashboard that Power BI/Tableau can refresh on a schedule
   from anywhere, point `DB_URL` at a hosted PostgreSQL instance (Neon,
   Supabase, Railway — all have free tiers) instead.
-- **Ticker config duplication**: `TICKERS`, `BENCHMARK`, and `RISK_FREE_RATE`
-  are defined independently in both `etl_pipeline.py` and `risk_analysis.py`
-  (matching the source guides). Changing the portfolio means editing both
-  files identically.
 - **yfinance rate limits**: Yahoo Finance has no official API and can
   rate-limit or intermittently fail multi-ticker batch downloads. The
   pipeline logs failures per-ticker but does not automatically retry.

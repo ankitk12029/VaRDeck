@@ -10,29 +10,11 @@ from sqlalchemy import create_engine
 from datetime import datetime, timedelta
 import logging
 
+from config import TICKERS, BENCHMARK, RISK_FREE_RATE, LOOKBACK_YEARS, DB_URL, HELD_TICKERS, WEIGHTS
+
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s  %(levelname)s  %(message)s")
 logger = logging.getLogger(__name__)
-
-# ── CONFIGURATION ────────────────────────────────────────────────
-# Change these to build YOUR portfolio story
-TICKERS = {
-    "AAPL":  {"sector": "Technology",    "weight": 0.20},
-    "MSFT":  {"sector": "Technology",    "weight": 0.15},
-    "JPM":   {"sector": "Financials",    "weight": 0.15},
-    "JNJ":   {"sector": "Healthcare",    "weight": 0.10},
-    "XOM":   {"sector": "Energy",        "weight": 0.10},
-    "PG":    {"sector": "Consumer",      "weight": 0.10},
-    "SPY":   {"sector": "Benchmark",     "weight": 0.00},  # benchmark, not held
-    "BND":   {"sector": "Fixed Income",  "weight": 0.10},
-    "GLD":   {"sector": "Commodities",   "weight": 0.10},
-}
-
-BENCHMARK = "SPY"
-RISK_FREE_RATE = 0.05          # annual, update as needed
-LOOKBACK_YEARS = 3
-DB_URL = "sqlite:///portfolio_dashboard.db"   # swap for PostgreSQL in prod
-# For PostgreSQL: "postgresql://user:pass@localhost:5432/portfolio_db"
 
 
 # ── DATA PULL ────────────────────────────────────────────────────
@@ -145,8 +127,7 @@ def compute_risk_metrics(daily_returns: pd.DataFrame) -> pd.DataFrame:
 # ── PORTFOLIO-LEVEL METRICS ──────────────────────────────────────
 def compute_portfolio_returns(daily_returns: pd.DataFrame) -> pd.Series:
     """Weighted portfolio return series."""
-    weights = pd.Series({t: info["weight"]
-                         for t, info in TICKERS.items() if info["weight"] > 0})
+    weights = pd.Series(dict(zip(HELD_TICKERS, WEIGHTS)))
     # Align columns
     common = daily_returns.columns.intersection(weights.index)
     return daily_returns[common].mul(weights[common], axis=1).sum(axis=1)
@@ -154,7 +135,7 @@ def compute_portfolio_returns(daily_returns: pd.DataFrame) -> pd.Series:
 
 def compute_correlation_matrix(daily_returns: pd.DataFrame) -> pd.DataFrame:
     """Rolling 90-day correlation, returned as long-format for BI tools."""
-    held = [t for t, info in TICKERS.items() if info["weight"] > 0]
+    held = HELD_TICKERS
     corr = daily_returns[held].rolling(90).corr()
 
     # Flatten to long format: date, ticker_a, ticker_b, correlation

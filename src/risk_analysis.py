@@ -18,29 +18,11 @@ from datetime import datetime, timedelta
 import warnings
 import logging
 
+from config import TICKERS, BENCHMARK, RISK_FREE_RATE, DB_URL, HELD_TICKERS, WEIGHTS
+
 warnings.filterwarnings("ignore")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s  %(levelname)s  %(message)s")
 logger = logging.getLogger(__name__)
-
-# ── CONFIGURATION (import from main pipeline or duplicate here) ────────
-TICKERS = {
-    "AAPL":  {"sector": "Technology",    "weight": 0.20},
-    "MSFT":  {"sector": "Technology",    "weight": 0.15},
-    "JPM":   {"sector": "Financials",    "weight": 0.15},
-    "JNJ":   {"sector": "Healthcare",    "weight": 0.10},
-    "XOM":   {"sector": "Energy",        "weight": 0.10},
-    "PG":    {"sector": "Consumer",      "weight": 0.10},
-    "SPY":   {"sector": "Benchmark",     "weight": 0.00},
-    "BND":   {"sector": "Fixed Income",  "weight": 0.10},
-    "GLD":   {"sector": "Commodities",   "weight": 0.10},
-}
-
-BENCHMARK = "SPY"
-RISK_FREE_RATE = 0.05
-DB_URL = "sqlite:///portfolio_dashboard.db"
-
-HELD_TICKERS = [t for t, info in TICKERS.items() if info["weight"] > 0]
-WEIGHTS = np.array([TICKERS[t]["weight"] for t in HELD_TICKERS])
 
 
 # ======================================================================
