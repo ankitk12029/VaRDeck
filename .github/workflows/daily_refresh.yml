@@ -39,10 +39,6 @@ jobs:
         run: pip install -r requirements.txt
       - name: Run ETL pipeline (data quality gate fails the job on bad data)
         working-directory: src
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python etl_pipeline.py
-      - name: Upload database artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: portfolio-dashboard-db
-          path: src/portfolio_dashboard.db
-          retention-days: 14

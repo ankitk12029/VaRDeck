@@ -66,6 +66,28 @@ source portfolio_env/bin/activate      # Windows: portfolio_env\Scripts\activate
 pip install -r requirements.txt
 ```
 
+## Environment Setup
+
+The pipeline reads its database connection from the `DATABASE_URL`
+environment variable. Copy [.env.example](.env.example) and fill in your own
+credentials (a hosted Postgres instance such as
+[Neon](https://neon.tech) works well — copy the connection string it gives
+you, including `?sslmode=require`):
+
+```bash
+cp .env.example .env
+# edit .env with your real DATABASE_URL, then load it into your shell, e.g.:
+export $(grep -v '^#' .env | xargs)
+```
+
+`.env` is gitignored and never committed. If `DATABASE_URL` isn't set, the
+pipeline falls back to a local SQLite file
+(`src/portfolio_dashboard.db`), so the project still works out of the box
+for anyone cloning it without a Postgres database.
+
+In CI, `DATABASE_URL` is supplied via a GitHub Actions repository secret
+(see `.github/workflows/daily_refresh.yml`) rather than a `.env` file.
+
 ## Running the Pipeline
 
 To change the portfolio composition, edit only `src/config.py`.
@@ -75,9 +97,11 @@ cd src
 python etl_pipeline.py
 ```
 
-This fetches live market data, computes all metrics, and writes
-`src/portfolio_dashboard.db` (SQLite). It also runs the full risk analysis
-engine automatically as the last step.
+This fetches live market data, computes all metrics, and writes to whatever
+`DATABASE_URL` points at (a hosted Postgres instance, or
+`src/portfolio_dashboard.db` via SQLite if unset — see
+[Environment Setup](#environment-setup)). It also runs the full risk
+analysis engine automatically as the last step.
 
 ### Verifying the output
 
@@ -133,12 +157,6 @@ _Add Power BI and Tableau dashboard screenshots here once built:_
 
 ## Known Limitations
 
-- **SQLite + scheduled refresh**: SQLite is a local file, so a GitHub
-  Actions-scheduled run produces a database that only exists inside that CI
-  run (uploaded as a build artifact, not a persistent live endpoint). For a
-  genuinely "live" dashboard that Power BI/Tableau can refresh on a schedule
-  from anywhere, point `DB_URL` at a hosted PostgreSQL instance (Neon,
-  Supabase, Railway — all have free tiers) instead.
 - **yfinance rate limits**: Yahoo Finance has no official API and can
   rate-limit or intermittently fail multi-ticker batch downloads. The
   pipeline logs failures per-ticker but does not automatically retry.

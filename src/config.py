@@ -6,6 +6,8 @@ To change the portfolio, edit TICKERS below — everything else in the
 codebase reads from here.
 """
 
+import os
+
 import numpy as np
 
 TICKERS = {
@@ -23,8 +25,19 @@ TICKERS = {
 BENCHMARK = "SPY"
 RISK_FREE_RATE = 0.05          # annual, update as needed
 LOOKBACK_YEARS = 3
-DB_URL = "sqlite:///portfolio_dashboard.db"   # swap for PostgreSQL in prod
-# For PostgreSQL: "postgresql://user:pass@localhost:5432/portfolio_db"
+DB_URL = os.environ.get("DATABASE_URL", "sqlite:///portfolio_dashboard.db")
+# DATABASE_URL is set locally via `export` or in CI via a GitHub Actions
+# secret (see .env.example). Falls back to local SQLite if unset, so the
+# project still works for anyone cloning it without a Neon account.
+
+# SQLAlchemy's default Postgres dialect is psycopg2 (already in
+# requirements.txt), and it accepts plain "postgresql://" URLs directly —
+# no "+psycopg2" suffix needed. Some providers (Heroku, older Neon docs)
+# still hand out the deprecated "postgres://" scheme, which SQLAlchemy 1.4+
+# rejects outright, so normalize it here. Query params like
+# "?sslmode=require" pass through untouched either way.
+if DB_URL.startswith("postgres://"):
+    DB_URL = DB_URL.replace("postgres://", "postgresql://", 1)
 
 HELD_TICKERS = [t for t, info in TICKERS.items() if info["weight"] > 0]
 WEIGHTS = np.array([TICKERS[t]["weight"] for t in HELD_TICKERS])

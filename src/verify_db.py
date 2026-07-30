@@ -7,7 +7,7 @@ no impossible values in VaR / stress test / Monte Carlo results).
 import pandas as pd
 from sqlalchemy import create_engine, inspect
 
-DB_URL = "sqlite:///portfolio_dashboard.db"
+from config import DB_URL
 
 
 def main():
