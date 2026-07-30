@@ -5,13 +5,13 @@ on:
     - cron: '0 12 * * 1-5'    # noon UTC = ~7 AM ET on weekdays
   workflow_dispatch:            # manual trigger for testing
   push:
-    branches: [main]
+    branches: [master]
     paths:
       - 'src/**'
       - 'requirements.txt'
       - '.github/workflows/daily_refresh.yml'
   pull_request:
-    branches: [main]
+    branches: [master]
 
 jobs:
   test:
@@ -40,8 +40,6 @@ jobs:
       - name: Run ETL pipeline (data quality gate fails the job on bad data)
         working-directory: src
         run: python etl_pipeline.py
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
       - name: Upload database artifact
         uses: actions/upload-artifact@v4
         with:
