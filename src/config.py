@@ -38,6 +38,10 @@ DB_URL = os.environ.get("DATABASE_URL", "sqlite:///portfolio_dashboard.db")
 # "?sslmode=require" pass through untouched either way.
 if DB_URL.startswith("postgres://"):
     DB_URL = DB_URL.replace("postgres://", "postgresql://", 1)
+# A "postgresql+psycopg://" URL selects the psycopg v3 driver, which we don't
+# install. Pin it to psycopg2 so the URL works with requirements.txt.
+if DB_URL.startswith("postgresql+psycopg://"):
+    DB_URL = DB_URL.replace("postgresql+psycopg://", "postgresql+psycopg2://", 1)
 
 HELD_TICKERS = [t for t, info in TICKERS.items() if info["weight"] > 0]
 WEIGHTS = np.array([TICKERS[t]["weight"] for t in HELD_TICKERS])
